@@ -19,24 +19,8 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
 
             val res: String = async {
-
-                val apiService = Network.getInstance().create(ApiService::class.java)
-                apiService.getUserData().enqueue(object : Callback<ResponseModel> {
-                    override fun onResponse(
-                        call: Call<ResponseModel>,
-                        response: Response<ResponseModel>
-                    ) {
-                        response.body()?.run {
-                            UserList = response.body()!!
-                            tvText1.text = response.body()?.get(1)?.name.toString()
-                            tvText2.text = response.body()?.get(1)?.language.toString()
-                        }
-                    }
-                    override fun onFailure(call: Call<ResponseModel>, t: Throwable) {
-                        Toast.makeText(this@MainActivity, "API calling failed", Toast.LENGTH_LONG).show()
-                    }
-                })
-                return@async "apiservice1"
+                var data = getApiData()
+                return@async "$data"
             }.await()
 
             CoroutineScope(Dispatchers.Main).launch {
@@ -44,5 +28,26 @@ class MainActivity : AppCompatActivity() {
                 Log.d("onCreate", "onCreate: $res")
             }
         }
+    }
+
+    fun getApiData(): String {
+        val apiService = Network.getInstance().create(ApiService::class.java)
+        apiService.getUserData().enqueue(object : Callback<ResponseModel> {
+            override fun onResponse(
+                call: Call<ResponseModel>,
+                response: Response<ResponseModel>
+            ) {
+                response.body()?.run {
+                    UserList = response.body()!!
+                    tvText1.text = response.body()?.get(1)?.name.toString()
+                    tvText2.text = response.body()?.get(1)?.language.toString()
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseModel>, t: Throwable) {
+                Toast.makeText(this@MainActivity, "API calling failed", Toast.LENGTH_LONG).show()
+            }
+        })
+        return "apiservice1"
     }
 }
